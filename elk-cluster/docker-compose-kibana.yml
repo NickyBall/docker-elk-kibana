@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: kibana
+    environment:
+      # IP addresses are loaded from .env file
+      # Kibana will connect to both Elasticsearch nodes
+      - ELASTICSEARCH_HOSTS=["http://${ES_NODE1_IP}:9200","http://${ES_NODE2_IP}:9200"]
+
+      # Server settings
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+      - SERVER_NAME=kibana
+
+      # Security disabled
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=fhjskloppd678ehkdfdlliverpoolfcr
+
+    ports:
+      - "5601:5601"
+
+    networks:
+      - elastic
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  elastic:
+    driver: bridge

@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  elasticsearch-node1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch-node1
+    environment:
+      # Node identification
+      - node.name=es-node1
+      - cluster.name=elk-cluster
+
+      # Network settings
+      - network.host=0.0.0.0
+      - network.publish_host=${ES_NODE1_IP}
+      - http.port=9200
+      - transport.port=9300
+
+      # Cluster discovery settings
+      # IP addresses are loaded from .env file
+      - discovery.seed_hosts=${ES_NODE2_IP}:9300
+      - cluster.initial_master_nodes=es-node1,es-node2
+
+      # Security disabled (as requested)
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+
+      # Memory settings
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - bootstrap.memory_lock=true
+
+      # Performance optimizations
+      - indices.memory.index_buffer_size=30%
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+
+    volumes:
+      # Mount volume for data - ensure /mnt/elasticsearch-data exists and has correct permissions
+      # sudo mkdir -p /mnt/elasticsearch-data
+      # sudo chown -R 1000:1000 /mnt/elasticsearch-data
+      - /mnt/elasticsearch-data:/usr/share/elasticsearch/data
+      # Optional: separate logs location
+      - /var/log/elasticsearch:/usr/share/elasticsearch/logs
+
+    ports:
+      - "9200:9200"  # HTTP API
+      - "9300:9300"  # Transport (node-to-node communication)
+
+    networks:
+      - elastic
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  elastic:
+    driver: bridge
