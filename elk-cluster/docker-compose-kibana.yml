@@ -7,7 +7,7 @@ services:
     environment:
       # IP addresses are loaded from .env file
       # Kibana will connect to both Elasticsearch nodes
-      - ELASTICSEARCH_HOSTS=["http://${ES_NODE1_IP}:9200","http://${ES_NODE2_IP}:9200"]
+      - ELASTICSEARCH_HOSTS=["http://${ES_NODE1_IP}:9200","http://${ES_NODE2_IP}:9200","http://${ES_NODE3_IP}:9200"]
 
       # Server settings
       - SERVER_HOST=0.0.0.0

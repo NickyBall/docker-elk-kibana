@@ -1,23 +1,23 @@
 version: "3.8"
 
 services:
-  elasticsearch-node2:
+  elasticsearch-node3:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch-node2
+    container_name: elasticsearch-node3
     environment:
       # Node identification
-      - node.name=es-node2
+      - node.name=es-node3
       - cluster.name=elk-cluster
 
       # Network settings
       - network.host=0.0.0.0
-      - network.publish_host=${ES_NODE2_IP}
+      - network.publish_host=${ES_NODE3_IP}
       - http.port=9200
       - transport.port=9300
 
       # Cluster discovery settings
       # IP addresses are loaded from .env file
-      - discovery.seed_hosts=${ES_NODE1_IP}:9300,${ES_NODE3_IP}:9300
+      - discovery.seed_hosts=${ES_NODE1_IP}:9300,${ES_NODE2_IP}:9300
       - cluster.initial_master_nodes=es-node1,es-node2,es-node3
 
       # Security disabled (as requested)

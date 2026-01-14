@@ -17,8 +17,8 @@ services:
 
       # Cluster discovery settings
       # IP addresses are loaded from .env file
-      - discovery.seed_hosts=${ES_NODE2_IP}:9300
-      - cluster.initial_master_nodes=es-node1,es-node2
+      - discovery.seed_hosts=${ES_NODE2_IP}:9300,${ES_NODE3_IP}:9300
+      - cluster.initial_master_nodes=es-node1,es-node2,es-node3
 
       # Security disabled (as requested)
       - xpack.security.enabled=false

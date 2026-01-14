@@ -1,12 +1,12 @@
 # ELK Cluster Quick Start Guide
 
-Simple step-by-step guide to get your 2-node Elasticsearch cluster with Kibana running across 3 VMs.
+Simple step-by-step guide to get your 3-node Elasticsearch cluster with Kibana running across 4 VMs.
 
 ## Prerequisites
 
-- 3 VMs with Docker and Docker Compose installed
+- 4 VMs with Docker and Docker Compose installed
 - Network connectivity between VMs (ports 9200, 9300, 5601 open)
-- Minimum 8GB RAM per Elasticsearch VM
+- Minimum 8GB RAM per Elasticsearch VM (VM1, VM2, VM3)
 
 ## Setup Steps
 
@@ -21,17 +21,18 @@ ip addr show | grep "inet " | grep -v 127.0.0.1
 ```
 
 **Example:**
-- VM1: `10.0.1.10`
-- VM2: `10.0.1.11`
-- VM3: `10.0.1.12`
+- VM1: `10.0.1.10` (Elasticsearch node1)
+- VM2: `10.0.1.11` (Elasticsearch node2)
+- VM3: `10.0.1.12` (Elasticsearch node3)
+- VM4: `10.0.1.13` (Kibana)
 
 ---
 
-### Step 2: Prepare Elasticsearch VMs (VM1 and VM2) ⚠️ CRITICAL
+### Step 2: Prepare Elasticsearch VMs (VM1, VM2, and VM3) ⚠️ CRITICAL
 
 **IMPORTANT**: This step is **required** or Elasticsearch will fail to start!
 
-On **both VM1 and VM2**, you have two options:
+On **all three Elasticsearch VMs (VM1, VM2, and VM3)**, you have two options:
 
 **Option A - Automated (Recommended):**
 
@@ -80,18 +81,28 @@ nano .env
 ```bash
 ES_NODE1_IP=10.0.1.10   # This VM's IP
 ES_NODE2_IP=10.0.1.11   # VM2's IP
+ES_NODE3_IP=10.0.1.12   # VM3's IP
 ```
 
 **VM2 - Edit .env:**
 ```bash
 ES_NODE1_IP=10.0.1.10   # VM1's IP
 ES_NODE2_IP=10.0.1.11   # This VM's IP
+ES_NODE3_IP=10.0.1.12   # VM3's IP
 ```
 
 **VM3 - Edit .env:**
 ```bash
 ES_NODE1_IP=10.0.1.10   # VM1's IP
 ES_NODE2_IP=10.0.1.11   # VM2's IP
+ES_NODE3_IP=10.0.1.12   # This VM's IP
+```
+
+**VM4 (Kibana) - Edit .env:**
+```bash
+ES_NODE1_IP=10.0.1.10   # VM1's IP
+ES_NODE2_IP=10.0.1.11   # VM2's IP
+ES_NODE3_IP=10.0.1.12   # VM3's IP
 ```
 
 ---
@@ -114,9 +125,17 @@ docker-compose -f docker-compose-es-node2.yml up -d
 docker-compose -f docker-compose-es-node2.yml logs -f
 ```
 
-Wait for both Elasticsearch nodes to be fully up (look for "Cluster health status changed from [YELLOW] to [GREEN]" or similar).
-
 **On VM3:**
+```bash
+docker-compose -f docker-compose-es-node3.yml up -d
+
+# Check logs
+docker-compose -f docker-compose-es-node3.yml logs -f
+```
+
+Wait for all three Elasticsearch nodes to be fully up (look for "Cluster health status changed from [YELLOW] to [GREEN]" or similar).
+
+**On VM4 (Kibana):**
 ```bash
 docker-compose -f docker-compose-kibana.yml up -d
 
@@ -138,8 +157,8 @@ curl http://10.0.1.10:9200/_cluster/health?pretty
 {
   "cluster_name" : "elk-cluster",
   "status" : "green",
-  "number_of_nodes" : 2,
-  "number_of_data_nodes" : 2
+  "number_of_nodes" : 3,
+  "number_of_data_nodes" : 3
 }
 ```
 
@@ -149,7 +168,7 @@ curl http://10.0.1.10:9200/_cat/nodes?v
 ```
 
 **Access Kibana:**
-Open your browser to: `http://10.0.1.12:5601`
+Open your browser to: `http://10.0.1.13:5601`
 
 ---
 
@@ -259,9 +278,10 @@ docker-compose -f docker-compose-es-node1.yml logs --tail=100
 
 ```
 elk-cluster/
-├── docker-compose-es-node1.yml   # For VM1
-├── docker-compose-es-node2.yml   # For VM2
-├── docker-compose-kibana.yml     # For VM3
+├── docker-compose-es-node1.yml   # For VM1 (Elasticsearch node1)
+├── docker-compose-es-node2.yml   # For VM2 (Elasticsearch node2)
+├── docker-compose-es-node3.yml   # For VM3 (Elasticsearch node3)
+├── docker-compose-kibana.yml     # For VM4 (Kibana)
 ├── .env.example                   # Template
 ├── .env                           # Your actual config (create this)
 ├── setup-vm.sh                    # VM preparation script
@@ -298,7 +318,7 @@ curl -X POST "http://10.0.1.10:9200/test-index/_doc" -H 'Content-Type: applicati
 curl -X GET "http://10.0.1.10:9200/test-index/_search?pretty"
 ```
 
-Then view it in Kibana at `http://10.0.1.12:5601`
+Then view it in Kibana at `http://10.0.1.13:5601`
 
 ---
 
